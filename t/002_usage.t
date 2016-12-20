@@ -4,7 +4,10 @@ use strict;
 use warnings;
 
 use Test::More;
-plan tests => 9;
+use Test::Deep;
+use Test::Exception;
+
+plan tests => 13;
 
 use Symbol::Get ();
 
@@ -38,11 +41,32 @@ is(
     'code',
 );
 
+is(
+    Symbol::Get::get('&t::Foo::Bar::i_am_not_there'),
+    undef,
+    'get() returns undef on an unknown variable name',
+);
+
+#----------------------------------------------------------------------
+
+cmp_deeply(
+    [ Symbol::Get::get_names('t::Foo::Bar') ],
+    superbagof( qw( thing list hash code ) ),
+    'get_names()',
+) or diag explain [ Symbol::Get::get_names('t::Foo::Bar') ];
+
+throws_ok(
+    sub { () = Symbol::Get::get_names('t::Foo::Bar::NOT_THERE') },
+    qr<t::Foo::Bar::NOT_THERE>,
+    'get_names() throws on an unknown package name',
+);
+
 #----------------------------------------------------------------------
 
 package t::Foo::Bar;
 
 use Test::More;
+use Test::Deep;
 
 our $thing = 'thing';
 
@@ -75,5 +99,11 @@ is(
     \&t::Foo::Bar::code,
     'code, no package',
 );
+
+cmp_deeply(
+    [ Symbol::Get::get_names() ],
+    superbagof( qw( thing list hash code ) ),
+    'get_names(), no package',
+) or diag explain [ Symbol::Get::get_names('t::Foo::Bar') ];
 
 1;

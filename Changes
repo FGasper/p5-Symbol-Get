@@ -1,4 +1,7 @@
 Revision history for Perl module Symbol::Get
 
-0.01 Mon Apr  4 2016
+0.01 Mon 19 Dec 2016
     - original version; created by ExtUtils::ModuleMaker 0.55
+
+0.02 Tue 20 Dec 2016
+    - Add get_names(), and failure tests

@@ -18,7 +18,12 @@ WriteMakefile(
              },
          },
     },
+    PREREQ_PM    => {
+        'Call::Context' => 0,
+    },
     TEST_REQUIRES    => {
-                     'Test::More' => 0.44,
-                    },
+        'Test::More' => 0.44,
+        'Test::Deep' => 0,
+        'Test::Exception' => 0,
+    },
 );
