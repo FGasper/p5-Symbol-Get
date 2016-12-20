@@ -8,6 +8,7 @@ WriteMakefile(
     VERSION_FROM => 'lib/Symbol/Get.pm', # finds \$VERSION
     AUTHOR       => 'Felipe Gasper (FELIPE)',
     ABSTRACT_FROM  => 'lib/Symbol/Get.pm',
+    LICENSE        => 'perl_5',
     META_MERGE => {
         'meta-spec' => { version => 2 },
          resources => {
