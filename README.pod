@@ -1,0 +1,43 @@
+=encoding utf-8
+
+=head1 NAME
+
+Symbol::Get - Read Perl’s symbol table programmatically
+
+=head1 SYNOPSIS
+
+    package Foo;
+
+    our $name = 'haha';
+    our @list = ( 1, 2, 3 );
+    our %hash = ( foo => 1, bar => 2 );
+
+    sub doit { ... }
+
+    my $name_sr = Symbol::Get::get('$Foo::name');    # \$name
+    my $list_ar = Symbol::Get::get('$Foo::list');    # \@list
+    my $hash_hr = Symbol::Get::get('$Foo::hash');    $ \%hash
+
+    #Defaults to __PACKAGE__ if none is given:
+    my $doit_cr = Symbol::Get::get('&doit');
+
+=head1 DESCRIPTION
+
+Occasionally I have need to reference a variable programmatically.
+This module facilitates that by providing an easy, read-only access to the
+symbol table.
+
+The above should pretty well cover usage.
+
+=head1 SEE ALSO
+
+=over 4
+
+=item * L<Symbol::Values>
+
+=back
+
+=head1 LICENSE
+
+This module is licensed under the same license as Perl.
+
