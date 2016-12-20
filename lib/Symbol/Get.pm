@@ -107,7 +107,7 @@ sub _get_table_hr {
     my ($name) = @_;
 
     if (index($name, '::') == -1) {
-        substr($name, 0, 0) = __PACKAGE__ . '::';
+        substr($name, 0, 0) = (caller 1)[0] . '::';
     }
 
     my $table_hr = \%main::;
@@ -115,9 +115,14 @@ sub _get_table_hr {
     my @nodes = split m<::(?=.)>, $name;
     my $last = pop @nodes;
 
-    $table_hr = $table_hr->{"${_}::"} for @nodes;
+    my $pkg = q<>;
 
-    return $table_hr->{$last};
+    for my $n (@nodes) {
+        $table_hr = $table_hr->{"$n\::"} || die "Unknown package: $pkg\::$n";
+        $pkg .= "$n\::";
+    }
+
+    return $table_hr->{$last} || die "Unknown symbol: $pkg\::$name";
 }
 
 1;
