@@ -21,13 +21,18 @@ Symbol::Get - Read Perl’s symbol table programmatically
     #Defaults to __PACKAGE__ if none is given:
     my $doit_cr = Symbol::Get::get('&doit');
 
+    #The below return the same results since get_names() defaults
+    #to the current package if none is given.
+    my @names = Symbol::Get::get_names('Foo');      # keys %Foo::
+    my @names = Symbol::Get::get_names();
+
 =head1 DESCRIPTION
 
 Occasionally I have need to reference a variable programmatically.
-This module facilitates that by providing an easy, read-only access to the
-symbol table.
+This module facilitates that by providing an easy, syntactic-sugar-y,
+read-only interface to the symbol table.
 
-The above should pretty well cover usage.
+The SYNOPSIS above should pretty well cover usage.
 
 =head1 SEE ALSO
 
