@@ -7,7 +7,7 @@ use Test::More;
 use Test::Deep;
 use Test::Exception;
 
-plan tests => 13;
+plan tests => 16;
 
 use Symbol::Get ();
 
@@ -48,6 +48,19 @@ is(
 );
 
 #----------------------------------------------------------------------
+is(
+    Symbol::Get::get('t::Foo::Bar::my_const'),
+    $t::Foo::Bar::{'my_const'},
+    'constant',
+);
+
+throws_ok(
+    sub { Symbol::Get::get('t::Foo::Bar::list') },
+    qr<t::Foo::Bar::list>,
+    'constant die()s if fed a non-constant',
+);
+
+#----------------------------------------------------------------------
 
 cmp_deeply(
     [ Symbol::Get::get_names('t::Foo::Bar') ],
@@ -67,6 +80,8 @@ package t::Foo::Bar;
 
 use Test::More;
 use Test::Deep;
+
+use constant my_const => 'haha';
 
 our $thing = 'thing';
 
@@ -105,5 +120,11 @@ cmp_deeply(
     superbagof( qw( thing list hash code ) ),
     'get_names(), no package',
 ) or diag explain [ Symbol::Get::get_names('t::Foo::Bar') ];
+
+is(
+    Symbol::Get::get('my_const'),
+    $t::Foo::Bar::{'my_const'},
+    'constant (no package)',
+);
 
 1;

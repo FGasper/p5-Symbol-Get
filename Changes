@@ -5,3 +5,6 @@ Revision history for Perl module Symbol::Get
 
 0.02 Tue 20 Dec 2016
     - Add get_names(), and failure tests
+
+0.03 Wed 21 Dec 2016
+    - Teach get() how to handle constants
