@@ -105,7 +105,7 @@ sub _get_constant {
 
     my $ref = _get_table_hr($var);
 
-    if ('SCALAR' ne ref $ref) {
+    if ('SCALAR' ne ref($ref) && 'ARRAY' ne ref($ref)) {
         die "$var is a regular symbol table entry, not a constant.";
     }
 

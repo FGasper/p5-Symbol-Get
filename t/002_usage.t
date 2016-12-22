@@ -7,7 +7,7 @@ use Test::More;
 use Test::Deep;
 use Test::Exception;
 
-plan tests => 16;
+plan tests => 18;
 
 use Symbol::Get ();
 
@@ -51,11 +51,17 @@ is(
 is(
     Symbol::Get::get('t::Foo::Bar::my_const'),
     $t::Foo::Bar::{'my_const'},
-    'constant',
+    'constant (scalar)',
+);
+
+is(
+    Symbol::Get::get('t::Foo::Bar::my_list'),
+    $t::Foo::Bar::{'my_list'},
+    'constant (array)',
 );
 
 throws_ok(
-    sub { Symbol::Get::get('t::Foo::Bar::list') },
+    sub { diag explain Symbol::Get::get('t::Foo::Bar::list') },
     qr<t::Foo::Bar::list>,
     'constant die()s if fed a non-constant',
 );
@@ -82,6 +88,7 @@ use Test::More;
 use Test::Deep;
 
 use constant my_const => 'haha';
+use constant my_list => qw( ha ha );
 
 our $thing = 'thing';
 
@@ -124,7 +131,13 @@ cmp_deeply(
 is(
     Symbol::Get::get('my_const'),
     $t::Foo::Bar::{'my_const'},
-    'constant (no package)',
+    'constant (scalar, no package)',
+);
+
+is(
+    Symbol::Get::get('my_list'),
+    $t::Foo::Bar::{'my_list'},
+    'constant (array, no package)',
 );
 
 1;
