@@ -11,3 +11,6 @@ Revision history for Perl module Symbol::Get
 
 0.04 Thu 22 Dec 2016
     - Teach get() how to handle list constants
+
+0.05 Fri 23 Dec 2016
+    - Accommodate pre-5.20 Perl versions’ storage of list constants

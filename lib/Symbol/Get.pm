@@ -5,7 +5,7 @@ use warnings;
 
 use Call::Context ();
 
-our $VERSION = 0.04;
+our $VERSION = 0.05;
 
 =encoding utf-8
 
@@ -62,6 +62,20 @@ entries.
 C<Symbol::Get::get()> expects you to pass in names of constants WITHOUT
 trailing parens (C<()>), as in the example above.
 
+List constants are a bit more “interesting”. The following:
+
+    use constant things => qw( a b c );
+
+… will, in Perl versions since 5.20, create an array reference in the symbol
+table, analogous to the scalar reference for a single value.
+C<Symbol::Get::get()> will return a reference to that array.
+
+B<PRE-5.20 NOTE:> Perl versions prior to 5.20 stored list constants as code
+references. If you’re wanting to fetch a list constant in pre-5.20 code,
+you’ll need to fetch it as a coderef. An exception is thrown if you try to
+access a list constant without a sigil via C<Symbol::Get::get()> in pre-5.20
+Perl versions.
+
 =head1 SEE ALSO
 
 =over 4
@@ -75,6 +89,8 @@ trailing parens (C<()>), as in the example above.
 This module is licensed under the same license as Perl.
 
 =cut
+
+use constant MIN_LIST_CONSTANT_PERL_VERSION => v5.20.0;
 
 my %_sigil_to_type = qw(
     $   SCALAR
@@ -100,13 +116,22 @@ sub get {
     return $table_hr && *{$table_hr}{$type};
 }
 
+#Refereced in tests.
+sub _perl_supports_getting_list_constant_ref { return $^V ge MIN_LIST_CONSTANT_PERL_VERSION() }
+
 sub _get_constant {
     my ($var) = @_;
 
     my $ref = _get_table_hr($var);
 
     if ('SCALAR' ne ref($ref) && 'ARRAY' ne ref($ref)) {
-        die "$var is a regular symbol table entry, not a constant.";
+        my $msg = "$var is a regular symbol table entry, not a constant.";
+
+        if ( !_perl_supports_getting_list_constant_ref() ) {
+            $msg .= " Your Perl version ($^V) stores list constants in the symbol table as CODE references rather than ARRAYs; maybe that’s the issue?";
+        }
+
+        die $msg;
     }
 
     return $ref;

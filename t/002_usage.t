@@ -36,8 +36,8 @@ is(
 );
 
 is(
-    Symbol::Get::get('&t::Foo::Bar::code'),
-    \&t::Foo::Bar::code,
+    Symbol::Get::get('&t::Foo::Bar::my_code'),
+    \&t::Foo::Bar::my_code,
     'code',
 );
 
@@ -54,11 +54,15 @@ is(
     'constant (scalar)',
 );
 
-is(
-    Symbol::Get::get('t::Foo::Bar::my_list'),
-    $t::Foo::Bar::{'my_list'},
-    'constant (array)',
-);
+SKIP: {
+    skip 'Needs >= v5.20', 1 if !Symbol::Get::_perl_supports_getting_list_constant_ref();
+
+    is(
+        Symbol::Get::get('t::Foo::Bar::my_list'),
+        $t::Foo::Bar::{'my_list'},
+        'constant (array)',
+    );
+}
 
 throws_ok(
     sub { diag explain Symbol::Get::get('t::Foo::Bar::list') },
@@ -70,7 +74,7 @@ throws_ok(
 
 cmp_deeply(
     [ Symbol::Get::get_names('t::Foo::Bar') ],
-    superbagof( qw( thing list hash code ) ),
+    superbagof( qw( thing list hash my_code my_const my_list ) ),
     'get_names()',
 ) or diag explain [ Symbol::Get::get_names('t::Foo::Bar') ];
 
@@ -96,7 +100,7 @@ our @list = qw( a b c );
 
 our %hash = ( a => 1, b => 2 );
 
-sub code { }
+sub my_code { }
 
 is(
     Symbol::Get::get('$thing'),
@@ -117,14 +121,14 @@ is(
 );
 
 is(
-    Symbol::Get::get('&code'),
-    \&t::Foo::Bar::code,
+    Symbol::Get::get('&my_code'),
+    \&t::Foo::Bar::my_code,
     'code, no package',
 );
 
 cmp_deeply(
     [ Symbol::Get::get_names() ],
-    superbagof( qw( thing list hash code ) ),
+    superbagof( qw( thing list hash my_code my_const my_list ) ),
     'get_names(), no package',
 ) or diag explain [ Symbol::Get::get_names('t::Foo::Bar') ];
 
@@ -134,10 +138,14 @@ is(
     'constant (scalar, no package)',
 );
 
-is(
-    Symbol::Get::get('my_list'),
-    $t::Foo::Bar::{'my_list'},
-    'constant (array, no package)',
-);
+SKIP: {
+    skip 'Needs >= v5.20', 1 if !Symbol::Get::_perl_supports_getting_list_constant_ref();
+
+    is(
+        Symbol::Get::get('my_list'),
+        $t::Foo::Bar::{'my_list'},
+        'constant (array, no package)',
+    );
+}
 
 1;
