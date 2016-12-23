@@ -8,3 +8,6 @@ Revision history for Perl module Symbol::Get
 
 0.03 Wed 21 Dec 2016
     - Teach get() how to handle constants
+
+0.04 Thu 22 Dec 2016
+    - Teach get() how to handle list constants
