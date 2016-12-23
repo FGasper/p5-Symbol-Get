@@ -12,6 +12,8 @@ Symbol::Get - Read Perl’s symbol table programmatically
     our @list = ( 1, 2, 3 );
     our %hash = ( foo => 1, bar => 2 );
 
+    use constant my_const => 'haha';
+
     sub doit { ... }
 
     my $name_sr = Symbol::Get::get('$Foo::name');    # \$name
@@ -20,6 +22,9 @@ Symbol::Get - Read Perl’s symbol table programmatically
 
     #Defaults to __PACKAGE__ if none is given:
     my $doit_cr = Symbol::Get::get('&doit');
+
+    #A constant--note the lack of sigil.
+    my $const_sr = Symbol::Get::get('Foo::my_const');
 
     #The below return the same results since get_names() defaults
     #to the current package if none is given.
@@ -33,6 +38,20 @@ This module facilitates that by providing an easy, syntactic-sugar-y,
 read-only interface to the symbol table.
 
 The SYNOPSIS above should pretty well cover usage.
+
+=head1 ABOUT PERL CONSTANTS
+
+This construction:
+
+    use constant foo => 'bar';
+
+… does something rather special with the symbol table: while you access
+C<foo> as though it were a function (e.g., C<foo()>, or just bareword C<foo>),
+the actual symbol table entry is a SCALAR reference, not a GLOB like other
+entries.
+
+C<Symbol::Get::get()> expects you to pass in names of constants WITHOUT
+trailing parens (C<()>), as in the example above.
 
 =head1 SEE ALSO
 
