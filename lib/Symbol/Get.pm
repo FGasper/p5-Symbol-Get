@@ -5,7 +5,7 @@ use warnings;
 
 use Call::Context ();
 
-our $VERSION = 0.05;
+our $VERSION = 0.06;
 
 =encoding utf-8
 
@@ -33,7 +33,13 @@ Symbol::Get - Read Perl’s symbol table programmatically
     my $doit_cr = Symbol::Get::get('&doit');
 
     #A constant--note the lack of sigil.
+    #See below for important compatibility information!
     my $const_sr = Symbol::Get::get('Foo::my_const');
+    my $const_ar = Symbol::Get::get('Foo::my_const_list');
+
+    #No compatibility issues here:
+    my $const_val = Symbol::Get::get_constant_value('Foo::my_const');
+    my @const_list = Symbol::Get::get_constant_value('Foo::my_const_list');
 
     #The below return the same results since get_names() defaults
     #to the current package if none is given.
@@ -50,7 +56,7 @@ The SYNOPSIS above should pretty well cover usage.
 
 =head1 ABOUT PERL CONSTANTS
 
-This construction:
+In modern Perl versions this construction:
 
     use constant foo => 'bar';
 
@@ -70,11 +76,16 @@ List constants are a bit more “interesting”. The following:
 table, analogous to the scalar reference for a single value.
 C<Symbol::Get::get()> will return a reference to that array.
 
-B<PRE-5.20 NOTE:> Perl versions prior to 5.20 stored list constants as code
-references. If you’re wanting to fetch a list constant in pre-5.20 code,
-you’ll need to fetch it as a coderef. An exception is thrown if you try to
-access a list constant without a sigil via C<Symbol::Get::get()> in pre-5.20
-Perl versions.
+=head1 LEGACY PERL VERSIONS
+
+B<PRE-5.20:> Perl versions prior to 5.20 stored list constants as code
+references. To fetch a list constant in pre-5.20 code
+you’ll need to fetch it as a coderef or with C<get_constant_value()>,
+as shown above.
+
+B<PRE-5.10:> Scalar B<AND> list constants are stored as code references.
+So you’ll need to fetch all constants as code refs, or via
+C<get_constant_value()>, as shown above.
 
 =head1 SEE ALSO
 
@@ -116,7 +127,32 @@ sub get {
     return $table_hr && *{$table_hr}{$type};
 }
 
-#Refereced in tests.
+sub get_constant_value {
+    my ($var) = @_;
+
+    my $ref = _get_table_hr($var);
+
+    my @value;
+
+    if ('SCALAR' eq ref $ref) {
+        @value = ($$ref);
+    }
+    elsif ('ARRAY' eq ref $ref) {
+        @value = @$ref;
+    }
+    else {
+        @value = *{$ref}{'CODE'}->();
+    }
+
+    if (@value > 1) {
+        Call::Context::must_be_list();
+        return @value;
+    }
+
+    return $value[0];
+}
+
+#Referenced in tests.
 sub _perl_supports_getting_list_constant_ref { return $^V ge MIN_LIST_CONSTANT_PERL_VERSION() }
 
 sub _get_constant {

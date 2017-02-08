@@ -7,9 +7,13 @@ use Test::More;
 use Test::Deep;
 use Test::Exception;
 
-plan tests => 18;
+use constant MIN_SCALAR_CONSTANT_PERL_VERSION => v5.10.0;
+
+plan tests => 24;
 
 use Symbol::Get ();
+
+sub _perl_supports_getting_scalar_constant_ref { return $^V ge MIN_SCALAR_CONSTANT_PERL_VERSION() }
 
 is(
     Symbol::Get::get('$t::Foo::Bar::thing'),
@@ -48,10 +52,22 @@ is(
 );
 
 #----------------------------------------------------------------------
+SKIP: {
+    skip 'Needs >= v5.10', 1 if !_perl_supports_getting_scalar_constant_ref();
+
+diag explain [ "$^V", \%t::Foo::Bar:: ];
+
+    is(
+        Symbol::Get::get('t::Foo::Bar::my_const'),
+        $t::Foo::Bar::{'my_const'},
+        'constant (scalar)',
+    );
+}
+
 is(
-    Symbol::Get::get('t::Foo::Bar::my_const'),
-    $t::Foo::Bar::{'my_const'},
-    'constant (scalar)',
+    Symbol::Get::get_constant_value('t::Foo::Bar::my_const'),
+    t::Foo::Bar::my_const(),
+    'get_constant_value (scalar, no package)',
 );
 
 SKIP: {
@@ -68,6 +84,18 @@ throws_ok(
     sub { diag explain Symbol::Get::get('t::Foo::Bar::list') },
     qr<t::Foo::Bar::list>,
     'constant die()s if fed a non-constant',
+);
+
+is_deeply(
+    [ Symbol::Get::get_constant_value('t::Foo::Bar::my_list') ],
+    [ t::Foo::Bar::my_list() ],
+    'get_constant_value (list, no package)',
+);
+
+throws_ok(
+    sub { my $v = Symbol::Get::get_constant_value('t::Foo::Bar::my_list') },
+    'Call::Context::X',
+    'get_constant_value() demands list context for a list',
 );
 
 #----------------------------------------------------------------------
@@ -90,6 +118,7 @@ package t::Foo::Bar;
 
 use Test::More;
 use Test::Deep;
+use Test::Exception;
 
 use constant my_const => 'haha';
 use constant my_list => qw( ha ha );
@@ -132,14 +161,24 @@ cmp_deeply(
     'get_names(), no package',
 ) or diag explain [ Symbol::Get::get_names('t::Foo::Bar') ];
 
+SKIP: {
+    skip 'Needs >= v5.10', 1 if !t::usage::_perl_supports_getting_scalar_constant_ref();
+
+    is(
+        Symbol::Get::get('my_const'),
+        $t::Foo::Bar::{'my_const'},
+        'constant (scalar, no package)',
+    );
+}
+
 is(
-    Symbol::Get::get('my_const'),
-    $t::Foo::Bar::{'my_const'},
-    'constant (scalar, no package)',
+    Symbol::Get::get_constant_value('my_const'),
+    t::Foo::Bar::my_const(),
+    'get_constant_value (scalar, no package)',
 );
 
 SKIP: {
-    skip 'Needs >= v5.20', 1 if !Symbol::Get::_perl_supports_getting_list_constant_ref();
+    skip 'Needs >= v5.20', 1 if !t::usage::_perl_supports_getting_list_constant_ref();
 
     is(
         Symbol::Get::get('my_list'),
@@ -147,5 +186,17 @@ SKIP: {
         'constant (array, no package)',
     );
 }
+
+is_deeply(
+    [ Symbol::Get::get_constant_value('my_list') ],
+    [ t::Foo::Bar::my_list() ],
+    'get_constant_value (list, no package)',
+);
+
+throws_ok(
+    sub { my $v = Symbol::Get::get_constant_value('my_list') },
+    'Call::Context::X',
+    'get_constant_value() demands list context for a list',
+);
 
 1;
