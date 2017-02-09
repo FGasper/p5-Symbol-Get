@@ -29,8 +29,8 @@ Symbol::Get - Read Perl’s symbol table programmatically
     my $const_ar = Symbol::Get::get('Foo::my_const_list');
 
     #No compatibility issues here:
-    my $const_val = Symbol::Get::get_constant_value('Foo::my_const');
-    my @const_list = Symbol::Get::get_constant_value('Foo::my_const_list');
+    my $const_val = Symbol::Get::copy_constant('Foo::my_const');
+    my @const_list = Symbol::Get::copy_constant('Foo::my_const_list');
 
     #The below return the same results since get_names() defaults
     #to the current package if none is given.
@@ -67,16 +67,27 @@ List constants are a bit more “interesting”. The following:
 table, analogous to the scalar reference for a single value.
 C<Symbol::Get::get()> will return a reference to that array.
 
+It gets hairier: even in modern Perl, sometimes constants can be stored as
+C<CODE> references. Compare the output of this one-liner …
+
+    perl -MData::Dumper -e'package foo; use constant haha => 7; print haha(); print Data::Dumper::Dumper(\%foo::);'
+
+… to this one:
+
+    perl -MData::Dumper -e'package foo; print haha(); print Data::Dumper::Dumper(\%foo::); use constant haha => 7;'
+
+So, to be perfectly safe in accessing constants, just use C<copy_constant()>.
+
 =head1 LEGACY PERL VERSIONS
 
 B<PRE-5.20:> Perl versions prior to 5.20 stored list constants as code
 references. To fetch a list constant in pre-5.20 code
-you’ll need to fetch it as a coderef or with C<get_constant_value()>,
+you’ll need to fetch it as a coderef or with C<copy_constant()>,
 as shown above.
 
 B<PRE-5.10:> Scalar B<AND> list constants are stored as code references.
 So you’ll need to fetch all constants as code refs, or via
-C<get_constant_value()>, as shown above.
+C<copy_constant()>, as shown above.
 
 =head1 SEE ALSO
 
