@@ -14,3 +14,6 @@ Revision history for Perl module Symbol::Get
 
 0.05 Fri 23 Dec 2016
     - Accommodate pre-5.20 Perl versions’ storage of list constants
+
+0.06 Wed 08 Feb 2017
+    - Add copy_constant() for more reliable access to constants.
