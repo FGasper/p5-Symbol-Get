@@ -5,7 +5,7 @@ use warnings;
 
 use Call::Context ();
 
-our $VERSION = 0.06;
+our $VERSION = 0.07;
 
 =encoding utf-8
 
@@ -32,12 +32,7 @@ Symbol::Get - Read Perl’s symbol table programmatically
     #Defaults to __PACKAGE__ if none is given:
     my $doit_cr = Symbol::Get::get('&doit');
 
-    #A constant--note the lack of sigil.
-    #See below for important compatibility information!
-    my $const_sr = Symbol::Get::get('Foo::my_const');
-    my $const_ar = Symbol::Get::get('Foo::my_const_list');
-
-    #No compatibility issues here:
+    #Constants:
     my $const_val = Symbol::Get::copy_constant('Foo::my_const');
     my @const_list = Symbol::Get::copy_constant('Foo::my_const_list');
 
@@ -56,47 +51,13 @@ The SYNOPSIS above should pretty well cover usage.
 
 =head1 ABOUT PERL CONSTANTS
 
-In modern Perl versions this construction:
+Previous versions of this module endorsed constructions like:
 
-    use constant foo => 'bar';
+    my $const_sr = Symbol::Get::get('Foo::my_const');
+    my $const_ar = Symbol::Get::get('Foo::my_const_list');
 
-… does something rather special with the symbol table: while you access
-C<foo> as though it were a function (e.g., C<foo()>, or just bareword C<foo>),
-the actual symbol table entry is a SCALAR reference, not a GLOB like other
-entries.
-
-C<Symbol::Get::get()> expects you to pass in names of constants WITHOUT
-trailing parens (C<()>), as in the example above.
-
-List constants are a bit more “interesting”. The following:
-
-    use constant things => qw( a b c );
-
-… will, in Perl versions since 5.20, create an array reference in the symbol
-table, analogous to the scalar reference for a single value.
-C<Symbol::Get::get()> will return a reference to that array.
-
-It gets hairier: even in modern Perl, sometimes constants can be stored as
-C<CODE> references. Compare the output of this one-liner …
-
-    perl -MData::Dumper -e'package foo; use constant haha => 7; print haha(); print Data::Dumper::Dumper(\%foo::);'
-
-… to this one:
-
-    perl -MData::Dumper -e'package foo; print haha(); print Data::Dumper::Dumper(\%foo::); use constant haha => 7;'
-
-So, to be perfectly safe in accessing constants, just use C<copy_constant()>.
-
-=head1 LEGACY PERL VERSIONS
-
-B<PRE-5.20:> Perl versions prior to 5.20 stored list constants as code
-references. To fetch a list constant in pre-5.20 code
-you’ll need to fetch it as a coderef or with C<copy_constant()>,
-as shown above.
-
-B<PRE-5.10:> Scalar B<AND> list constants are stored as code references.
-So you’ll need to fetch all constants as code refs, or via
-C<copy_constant()>, as shown above.
+… to read constants from the symbol table. This isn’t reliable across
+Perl versions, though, so don’t do it; instead, use C<copy_constant()>.
 
 =head1 SEE ALSO
 

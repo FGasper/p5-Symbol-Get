@@ -17,3 +17,6 @@ Revision history for Perl module Symbol::Get
 
 0.06 Wed 08 Feb 2017
     - Add copy_constant() for more reliable access to constants.
+
+0.07 Thu 09 Feb 2017
+    - Disown get() for constants. It’s just not reliable.
