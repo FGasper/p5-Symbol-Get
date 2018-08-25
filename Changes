@@ -1,5 +1,8 @@
 Revision history for Perl module Symbol::Get
 
+0.10 Fri 24 Aug 2018
+    - Fix LICENSE file (again)
+
 0.09 Fri 24 Aug 2018
     - Fix LICENSE file.
 
