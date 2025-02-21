@@ -101,12 +101,7 @@ sub get {
 
     # This happens with functions in main:: and, as of Perl 5.41.9, elsewhere.
     if (ref($table_hr) eq 'CODE') {
-        if ($sigil eq '&') {
-            return $table_hr;
-        }
-        else {
-            return undef;
-        }
+        return ($sigil eq '&') ? $table_hr : undef;
     }
 
     return $table_hr && *{$table_hr}{$type};

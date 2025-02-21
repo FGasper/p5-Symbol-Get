@@ -283,7 +283,7 @@ is(
     Symbol::Get::get('$my_code'),
     undef,
     'main: wrong sigil for code, no package',
-);
+) or diag explain Symbol::Get::get('$my_code');
 
 cmp_deeply(
     [ Symbol::Get::get_names() ],
