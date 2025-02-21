@@ -98,6 +98,17 @@ sub get {
     my $type = $_sigil_to_type{$sigil} or die "Unrecognized sigil: “$sigil”";
 
     my $table_hr = _get_table_hr( substr($var, 1) );
+
+    # This happens with functions in main:: and, as of Perl 5.41.9, elsewhere.
+    if (ref($table_hr) eq 'CODE') {
+        if ($sigil eq '&') {
+            return $table_hr;
+        }
+        else {
+            return undef;
+        }
+    }
+
     return $table_hr && *{$table_hr}{$type};
 }
 

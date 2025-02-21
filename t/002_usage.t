@@ -9,7 +9,7 @@ use Test::Exception;
 
 use constant MIN_SCALAR_CONSTANT_PERL_VERSION => v5.10.0;
 
-plan tests => 16;
+plan tests => 29;
 
 use Symbol::Get ();
 
@@ -33,6 +33,22 @@ our @list = qw( a b c );
 our %hash = ( a => 1, b => 2 );
 
 sub my_code { }
+
+{
+    package main;
+
+    use constant my_const => 'haha';
+    use constant my_list => qw( ha ha );
+
+    our $thing = 'thing';
+
+    our @list = qw( a b c );
+
+    our %hash = ( a => 1, b => 2 );
+
+    sub my_code { }
+}
+
 #----------------------------------------------------------------------
 
 package t::usage;
@@ -205,6 +221,112 @@ throws_ok(
     sub { my $v = Symbol::Get::copy_constant('my_list') },
     'Call::Context::X',
     'copy_constant() demands list context for a list',
+);
+
+#----------------------------------------------------------------------
+
+package main;
+
+use Test::More;
+use Test::Exception;
+use Test::Deep;
+
+is(
+    Symbol::Get::get('$thing'),
+    \$main::thing,
+    'main: scalar, no package',
+);
+
+is(
+    Symbol::Get::get('$missing'),
+    undef,
+    'main: missing scalar, no package',
+);
+
+is(
+    Symbol::Get::get('@list'),
+    \@main::list,
+    'main: list, no package',
+);
+
+is(
+    Symbol::Get::get('@missing'),
+    undef,
+    'main: missing array, no package',
+);
+
+is(
+    Symbol::Get::get('%hash'),
+    \%main::hash,
+    'main: hash, no package',
+);
+
+is(
+    Symbol::Get::get('%missing'),
+    undef,
+    'main: missing hash, no package',
+);
+
+is(
+    Symbol::Get::get('&my_code'),
+    \&main::my_code,
+    'main: code, no package',
+);
+
+is(
+    Symbol::Get::get('&missing'),
+    undef,
+    'main: missing code, no package',
+);
+
+is(
+    Symbol::Get::get('$my_code'),
+    undef,
+    'main: wrong sigil for code, no package',
+);
+
+cmp_deeply(
+    [ Symbol::Get::get_names() ],
+    superbagof( qw( thing list hash my_code my_const my_list ) ),
+    'main: get_names(), no package',
+) or diag explain [ Symbol::Get::get_names('main') ];
+
+#SKIP: {
+#    Test::More::skip 'Needs >= v5.10', 1 if !t::usage::_perl_supports_getting_scalar_constant_ref();
+#
+#    is(
+#        Symbol::Get::get('my_const'),
+#        $main::{'my_const'},
+#        'constant (scalar, no package)',
+#    );
+#}
+
+is(
+    Symbol::Get::copy_constant('my_const'),
+    main::my_const(),
+    'main: copy_constant (scalar, no package)',
+);
+
+#SKIP: {
+#    skip 'Needs >= v5.20', 1 if !Symbol::Get::_perl_supports_getting_list_constant_ref();
+#
+#    is(
+#        Symbol::Get::get('my_list'),
+#        $main::{'my_list'},
+#        'constant (array, no package)',
+#    );
+#}
+
+is_deeply(
+    [ Symbol::Get::copy_constant('my_list') ],
+    [ main::my_list() ],
+    'main: copy_constant (list, no package)',
+);
+
+throws_ok(
+    sub { my $v = Symbol::Get::copy_constant('my_list') },
+    'Call::Context::X',
+    'main: copy_constant() demands list context for a list',
 );
 
 1;
