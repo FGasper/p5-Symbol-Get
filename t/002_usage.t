@@ -9,7 +9,7 @@ use Test::Exception;
 
 use constant MIN_SCALAR_CONSTANT_PERL_VERSION => v5.10.0;
 
-plan tests => 16;
+plan tests => 18;
 
 use Symbol::Get ();
 
@@ -120,17 +120,17 @@ throws_ok(
 
 #----------------------------------------------------------------------
 
-#cmp_deeply(
-#    [ Symbol::Get::get_names('t::Foo::Bar') ],
-#    superbagof( qw( thing list hash my_code my_const my_list ) ),
-#    'get_names()',
-#) or diag explain [ Symbol::Get::get_names('t::Foo::Bar') ];
-#
-#throws_ok(
-#    sub { () = Symbol::Get::get_names('t::Foo::Bar::NOT_THERE') },
-#    qr<t::Foo::Bar::NOT_THERE>,
-#    'get_names() throws on an unknown package name',
-#);
+cmp_deeply(
+    [ Symbol::Get::get_names('t::Foo::Bar') ],
+    superbagof( qw( thing list hash my_code my_const my_list ) ),
+    'get_names()',
+) or diag explain [ Symbol::Get::get_names('t::Foo::Bar') ];
+
+throws_ok(
+    sub { () = Symbol::Get::get_names('t::Foo::Bar::NOT_THERE') },
+    qr<t::Foo::Bar::NOT_THERE>,
+    'get_names() throws on an unknown package name',
+);
 
 #----------------------------------------------------------------------
 
